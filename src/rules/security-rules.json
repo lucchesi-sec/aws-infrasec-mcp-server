@@ -1,0 +1,85 @@
+{
+  "rules": [
+    {
+      "id": "sg-ssh-world",
+      "name": "SSH Open to World",
+      "description": "SSH port 22 is accessible from anywhere (0.0.0.0/0)",
+      "severity": "HIGH",
+      "port": 22,
+      "protocol": "tcp",
+      "source": "0.0.0.0/0",
+      "recommendation": "Restrict SSH access to specific IP ranges or use VPN/bastion host"
+    },
+    {
+      "id": "sg-rdp-world",
+      "name": "RDP Open to World",
+      "description": "RDP port 3389 is accessible from anywhere (0.0.0.0/0)",
+      "severity": "HIGH",
+      "port": 3389,
+      "protocol": "tcp",
+      "source": "0.0.0.0/0",
+      "recommendation": "Restrict RDP access to specific IP ranges or use VPN"
+    },
+    {
+      "id": "sg-mysql-exposed",
+      "name": "MySQL Port Exposed",
+      "description": "MySQL port 3306 is accessible from the internet",
+      "severity": "HIGH",
+      "port": 3306,
+      "protocol": "tcp",
+      "source": "0.0.0.0/0",
+      "recommendation": "Place MySQL in private subnet and restrict access through application servers"
+    },
+    {
+      "id": "sg-postgres-exposed",
+      "name": "PostgreSQL Port Exposed",
+      "description": "PostgreSQL port 5432 is accessible from the internet",
+      "severity": "HIGH",
+      "port": 5432,
+      "protocol": "tcp",
+      "source": "0.0.0.0/0",
+      "recommendation": "Place PostgreSQL in private subnet and restrict access through application servers"
+    },
+    {
+      "id": "sg-mssql-exposed",
+      "name": "SQL Server Port Exposed",
+      "description": "SQL Server port 1433 is accessible from the internet",
+      "severity": "HIGH",
+      "port": 1433,
+      "protocol": "tcp",
+      "source": "0.0.0.0/0",
+      "recommendation": "Place SQL Server in private subnet and restrict access through application servers"
+    },
+    {
+      "id": "sg-redis-exposed",
+      "name": "Redis Port Exposed",
+      "description": "Redis port 6379 is accessible from the internet",
+      "severity": "HIGH",
+      "port": 6379,
+      "protocol": "tcp",
+      "source": "0.0.0.0/0",
+      "recommendation": "Place Redis in private subnet and enable authentication"
+    },
+    {
+      "id": "sg-wide-port-range",
+      "name": "Wide Port Range",
+      "description": "Security group allows wide port range access",
+      "severity": "MEDIUM",
+      "recommendation": "Restrict to specific ports needed for application functionality"
+    },
+    {
+      "id": "sg-unused",
+      "name": "Unused Security Group",
+      "description": "Security group is not attached to any resources",
+      "severity": "LOW",
+      "recommendation": "Remove unused security groups to reduce attack surface and management overhead"
+    },
+    {
+      "id": "sg-all-traffic",
+      "name": "All Traffic Allowed",
+      "description": "Security group allows all traffic (all ports, all protocols)",
+      "severity": "HIGH",
+      "recommendation": "Restrict to specific ports and protocols required by the application"
+    }
+  ]
+}
