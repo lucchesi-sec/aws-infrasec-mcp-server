@@ -1,22 +1,12 @@
-<!-- Core Technology Stack -->
-![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
-![Node.js](https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white)
-![AWS](https://img.shields.io/badge/AWS-FF9900?style=for-the-badge&logo=amazon-aws&logoColor=white)
-![MCP Server](https://img.shields.io/badge/MCP_Server-6366F1?style=for-the-badge&logo=server&logoColor=white)
-
-<!-- Project Status -->
-![Version](https://img.shields.io/badge/Version-1.0.0-blue?style=for-the-badge)
-![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)
-![Status](https://img.shields.io/badge/Status-Active_Development-brightgreen?style=for-the-badge)
-
-<!-- Security Focus -->
-![AWS Security](https://img.shields.io/badge/AWS_Security-Analysis_Tool-red?style=for-the-badge&logo=shield&logoColor=white)
-![Portfolio](https://img.shields.io/badge/Portfolio_Project-Professional-0078D4?style=for-the-badge&logo=github&logoColor=white)
-
-<!-- Technical Requirements -->
-![Node.js Version](https://img.shields.io/badge/Node.js->=18.0.0-43853D?style=for-the-badge&logo=node.js&logoColor=white)
-![NPM Install](https://img.shields.io/badge/Install-npm_install-CB3837?style=for-the-badge&logo=npm&logoColor=white)
 # AWS Infrastructure Security MCP Server
+
+[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/lucchesi-sec/aws-infrasec-mcp-server/graphs/commit-activity)
+[![GitHub last commit](https://img.shields.io/github/last-commit/lucchesi-sec/aws-infrasec-mcp-server.svg)](https://github.com/lucchesi-sec/aws-infrasec-mcp-server/commits/main)
+[![GitHub issues](https://img.shields.io/github/issues/lucchesi-sec/aws-infrasec-mcp-server.svg)](https://github.com/lucchesi-sec/aws-infrasec-mcp-server/issues)
+[![GitHub forks](https://img.shields.io/github/forks/lucchesi-sec/aws-infrasec-mcp-server.svg)](https://github.com/lucchesi-sec/aws-infrasec-mcp-server/network/members)
+[![GitHub stars](https://img.shields.io/github/stars/lucchesi-sec/aws-infrasec-mcp-server.svg)](https://github.com/lucchesi-sec/aws-infrasec-mcp-server/stargazers)
+[![Made with TypeScript](https://img.shields.io/badge/Made%20with-TypeScript-1f425f.svg)](https://www.typescriptlang.org/)
+![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 
 A learning-focused Model Context Protocol (MCP) server that demonstrates AWS infrastructure security analysis capabilities. This project showcases MCP server development skills and AWS security knowledge for portfolio purposes.
 
