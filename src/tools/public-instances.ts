@@ -10,6 +10,45 @@ const PublicInstanceAnalysisSchema = z.object({
 
 export type PublicInstanceAnalysisInput = z.infer<typeof PublicInstanceAnalysisSchema>;
 
+// Import types from analyzer service
+import type { PublicInstanceResult } from '../services/analyzer.js';
+
+// Local type definitions 
+interface PublicInstanceSummary {
+  publicInstances: number;
+  highRisk: number;
+  mediumRisk: number;
+  lowRisk: number;
+  totalExposedPorts: number;
+  criticalServiceExposures: number;
+}
+
+interface ExtendedPublicInstanceResult {
+  analysisType: string;
+  region: string;
+  timestamp: string;
+  summary: PublicInstanceResult['summary'] & {
+    publicExposureRate: string;
+    averageExposedPorts: number;
+  };
+  publicInstances: Array<{
+    instance: {
+      id: string;
+      publicIp: string;
+      riskLevel: 'HIGH' | 'MEDIUM' | 'LOW';
+    };
+    security: {
+      associatedSecurityGroups: string[];
+      exposedPorts: number[];
+      portCount: number;
+      criticalPortsExposed: Array<{port: number, service: string}>;
+    };
+    recommendations: string[];
+  }>;
+  riskAssessment: PublicInstanceSummary;
+  overallRecommendations: string[];
+}
+
 export class PublicInstanceTool {
   name = 'scan_public_instances';
   description = 'Scan EC2 instances for public IP exposure and associated security risks';
@@ -31,7 +70,7 @@ export class PublicInstanceTool {
     required: []
   } as const;
 
-  async execute(input: unknown): Promise<any> {
+  async execute(input: unknown): Promise<ExtendedPublicInstanceResult> {
     try {
       // Validate input
       const validatedInput = PublicInstanceAnalysisSchema.parse(input);
@@ -54,7 +93,9 @@ export class PublicInstanceTool {
       const analysisResult = await analyzer.analyzePublicInstances(ec2Client, region);
 
       // Format results for better readability
-      const formattedResult = {
+      const riskAssessment = this.generateRiskAssessment(analysisResult.publicInstances);
+      
+      const formattedResult: ExtendedPublicInstanceResult = {
         analysisType: 'Public Instance Analysis',
         region: region,
         timestamp: new Date().toISOString(),
@@ -81,9 +122,12 @@ export class PublicInstanceTool {
           },
           recommendations: instance.recommendations
         })),
-        riskAssessment: this.generateRiskAssessment(analysisResult.publicInstances),
-        overallRecommendations: this.generateOverallRecommendations(analysisResult)
+        riskAssessment,
+        overallRecommendations: []
       };
+      
+      // Generate recommendations after the object is created
+      formattedResult.overallRecommendations = this.generateOverallRecommendations(formattedResult);
 
       return formattedResult;
 
@@ -117,33 +161,28 @@ export class PublicInstanceTool {
       .map(port => ({ port, service: criticalPortMap[port] }));
   }
 
-  private generateRiskAssessment(publicInstances: any[]): any {
+  private generateRiskAssessment(publicInstances: PublicInstanceResult['publicInstances']): PublicInstanceSummary {
     const highRiskInstances = publicInstances.filter(i => i.riskLevel === 'HIGH').length;
     const mediumRiskInstances = publicInstances.filter(i => i.riskLevel === 'MEDIUM').length;
     const lowRiskInstances = publicInstances.filter(i => i.riskLevel === 'LOW').length;
 
-    let overallRisk: 'HIGH' | 'MEDIUM' | 'LOW' = 'LOW';
-    if (highRiskInstances > 0) {
-      overallRisk = 'HIGH';
-    } else if (mediumRiskInstances > 0) {
-      overallRisk = 'MEDIUM';
-    }
 
     return {
-      overallRisk,
-      distribution: {
-        high: highRiskInstances,
-        medium: mediumRiskInstances,
-        low: lowRiskInstances
-      },
-      criticalFindings: publicInstances.reduce((acc, instance) => {
+      publicInstances: publicInstances.length,
+      highRisk: highRiskInstances,
+      mediumRisk: mediumRiskInstances,
+      lowRisk: lowRiskInstances,
+      totalExposedPorts: publicInstances.reduce((acc, instance) => {
+        return acc + instance.exposedPorts.length;
+      }, 0),
+      criticalServiceExposures: publicInstances.reduce((acc, instance) => {
         const criticalPorts = this.getCriticalPorts(instance.exposedPorts);
         return acc + criticalPorts.length;
       }, 0)
     };
   }
 
-  private generateOverallRecommendations(result: any): string[] {
+  private generateOverallRecommendations(result: ExtendedPublicInstanceResult): string[] {
     const recommendations: string[] = [];
     const { publicInstances, summary } = result;
 
@@ -154,15 +193,15 @@ export class PublicInstanceTool {
     }
 
     // Risk-based recommendations
-    const highRiskInstances = publicInstances.filter((i: any) => i.riskLevel === 'HIGH').length;
+    const highRiskInstances = publicInstances.filter(i => i.instance.riskLevel === 'HIGH').length;
     if (highRiskInstances > 0) {
       recommendations.push(`🚨 ${highRiskInstances} high-risk public instances require immediate attention`);
       recommendations.push('🛡️ Consider moving critical services to private subnets');
       recommendations.push('🔒 Implement bastion hosts or VPN for administrative access');
     }
 
-    // Port-specific recommendations
-    const totalExposedPorts = summary.exposedPorts;
+    // Port-specific recommendations  
+    const totalExposedPorts = result.riskAssessment.totalExposedPorts;
     if (totalExposedPorts > 0) {
       recommendations.push(`⚠️ ${totalExposedPorts} ports exposed across all public instances`);
       recommendations.push('🔧 Use Application Load Balancers to reduce direct instance exposure');

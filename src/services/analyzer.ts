@@ -304,7 +304,7 @@ export class SecurityAnalyzer {
 
   async analyzePublicInstances(
     ec2Client: EC2Client,
-    region: string
+    _region: string
   ): Promise<PublicInstanceResult> {
     try {
       const command = new DescribeInstancesCommand({});
@@ -330,13 +330,13 @@ export class SecurityAnalyzer {
 
       for (const instance of allInstances) {
         if (instance.PublicIpAddress && instance.State?.Name === 'running') {
-          const securityGroupIds = instance.SecurityGroups?.map(sg => sg.GroupId!).filter(Boolean) || [];
+          const securityGroupIds = instance.SecurityGroups?.map(sg => sg.GroupId).filter((id): id is string => Boolean(id)) || [];
           const exposedPorts = await this.getExposedPorts(ec2Client, securityGroupIds);
           const riskLevel = this.assessInstanceRisk(exposedPorts);
           const recommendations = this.generateInstanceRecommendations(exposedPorts);
 
           publicInstances.push({
-            instanceId: instance.InstanceId!,
+            instanceId: instance.InstanceId || 'unknown',
             publicIp: instance.PublicIpAddress,
             securityGroups: securityGroupIds,
             exposedPorts,

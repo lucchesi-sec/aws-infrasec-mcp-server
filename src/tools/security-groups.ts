@@ -11,6 +11,41 @@ const SecurityGroupAnalysisSchema = z.object({
 
 export type SecurityGroupAnalysisInput = z.infer<typeof SecurityGroupAnalysisSchema>;
 
+// Import types from analyzer service
+import type { AnalysisResult, SecurityFinding } from '../services/analyzer.js';
+
+// Extended result type for tool output
+interface ExtendedSecurityGroupResult {
+  analysisType: string;
+  region: string;
+  timestamp: string;
+  summary: AnalysisResult['summary'] & {
+    riskDistribution: {
+      high: string;
+      medium: string;
+      low: string;
+    };
+  };
+  findings: Array<{
+    securityGroup: {
+      id: string;
+      name: string;
+    };
+    issue: {
+      type: string;
+      severity: 'HIGH' | 'MEDIUM' | 'LOW';
+      description: string;
+      recommendation: string;
+    };
+    affectedRule: {
+      port: string | number;
+      protocol: string;
+      source: string;
+    } | null;
+  }>;
+  recommendations: string[];
+}
+
 export class SecurityGroupTool {
   name = 'analyze_security_groups';
   description = 'Analyze AWS Security Groups for potential security misconfigurations and vulnerabilities';
@@ -38,7 +73,7 @@ export class SecurityGroupTool {
     required: []
   } as const;
 
-  async execute(input: unknown): Promise<any> {
+  async execute(input: unknown): Promise<ExtendedSecurityGroupResult> {
     try {
       // Validate input
       const validatedInput = SecurityGroupAnalysisSchema.parse(input);
@@ -65,7 +100,7 @@ export class SecurityGroupTool {
       );
 
       // Format results for better readability
-      const formattedResult = {
+      const formattedResult: ExtendedSecurityGroupResult = {
         analysisType: 'Security Group Analysis',
         region: region,
         timestamp: new Date().toISOString(),
@@ -112,7 +147,7 @@ export class SecurityGroupTool {
     }
   }
 
-  private generateOverallRecommendations(findings: any[]): string[] {
+  private generateOverallRecommendations(findings: SecurityFinding[]): string[] {
     const recommendations: string[] = [];
     const highRiskCount = findings.filter(f => f.severity === 'HIGH').length;
     const mediumRiskCount = findings.filter(f => f.severity === 'MEDIUM').length;

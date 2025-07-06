@@ -8,7 +8,15 @@
     "build": "tsc",
     "dev": "ts-node src/index.ts",
     "start": "node build/index.js",
-    "clean": "rm -rf build"
+    "clean": "rm -rf build",
+    "lint": "eslint src/**/*.ts",
+    "lint:fix": "eslint src/**/*.ts --fix",
+    "lint:security": "eslint src/**/*.ts --ext .ts --format sarif -o eslint-results.sarif",
+    "security:audit": "npm audit --audit-level high",
+    "security:check": "npm run lint:security && npm run security:audit",
+    "format": "prettier --write src/**/*.ts",
+    "format:check": "prettier --check src/**/*.ts",
+    "validate": "npm run lint && npm run security:audit && npm run build"
   },
   "keywords": [
     "mcp",
@@ -20,14 +28,21 @@
   "author": "Your Name",
   "license": "MIT",
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^0.5.0",
     "@aws-sdk/client-ec2": "^3.478.0",
+    "@modelcontextprotocol/sdk": "^0.5.0",
     "zod": "^3.22.4"
   },
   "devDependencies": {
     "@types/node": "^20.10.0",
-    "typescript": "^5.3.0",
-    "ts-node": "^10.9.0"
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
+    "eslint": "^8.57.0",
+    "eslint-plugin-import": "^2.29.1",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-security": "^2.1.1",
+    "prettier": "^3.1.0",
+    "ts-node": "^10.9.0",
+    "typescript": "^5.3.0"
   },
   "engines": {
     "node": ">=18.0.0"

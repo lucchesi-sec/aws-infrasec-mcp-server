@@ -1,0 +1,32 @@
+name: "AWS MCP Server CodeQL Config"
+
+# Disable default queries and use security-focused query suites
+disable-default-queries: false
+
+# Additional query suites for enhanced security scanning
+queries:
+  - uses: security-and-quality
+  - uses: security-extended
+
+# Paths to include in CodeQL analysis
+paths:
+  - src/
+
+# Paths to exclude from analysis  
+paths-ignore:
+  - build/
+  - node_modules/
+  - "**/*.test.ts"
+  - "**/*.spec.ts"
+
+# Additional packs for TypeScript/Node.js security
+packs:
+  - codeql/javascript-queries
+  - codeql/security-queries
+
+# Custom queries specific to AWS SDK usage
+query-filters:
+  - exclude:
+      id: js/unused-local-variable
+      
+# Enhanced security scanning for AWS patterns

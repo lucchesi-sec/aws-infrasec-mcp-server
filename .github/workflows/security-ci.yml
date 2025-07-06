@@ -1,0 +1,117 @@
+name: Security CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Fast security checks for immediate feedback
+  fast-security:
+    name: Fast Security Checks
+    runs-on: ubuntu-latest
+    continue-on-error: true  # Non-blocking for Phase 1 implementation
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: TypeScript compilation check
+        run: npm run build
+        continue-on-error: true
+        
+      - name: ESLint security analysis
+        run: npm run lint
+        continue-on-error: true
+        
+      - name: Dependency vulnerability scan
+        run: npm audit --audit-level=high
+        continue-on-error: true
+        
+      - name: Security scan summary
+        if: always()
+        run: |
+          echo "=== Security Scan Summary ==="
+          echo "TypeScript compilation: $(npm run build > /dev/null 2>&1 && echo 'PASSED' || echo 'FAILED')"
+          echo "ESLint security: $(npm run lint > /dev/null 2>&1 && echo 'PASSED' || echo 'FAILED')"
+          echo "Dependency audit: $(npm audit --audit-level=high > /dev/null 2>&1 && echo 'PASSED' || echo 'FAILED')"
+          echo "=== End Summary ==="
+
+  # Parallel CodeQL SAST analysis
+  codeql:
+    name: CodeQL Security Analysis
+    runs-on: ubuntu-latest
+    continue-on-error: true  # Non-blocking for Phase 1 implementation
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ 'typescript' ]
+        
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          queries: security-and-quality
+          
+      - name: Setup Node.js 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          
+      - name: Install dependencies and build
+        run: |
+          npm ci
+          npm run build
+          
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{matrix.language}}"
+
+  # Security reporting job that runs after both security jobs
+  security-report:
+    name: Security Report
+    runs-on: ubuntu-latest
+    needs: [fast-security, codeql]
+    if: always()
+    
+    steps:
+      - name: Security CI Summary
+        run: |
+          echo "=== Security CI Pipeline Results ==="
+          echo "Fast Security Job: ${{ needs.fast-security.result }}"
+          echo "CodeQL Analysis: ${{ needs.codeql.result }}"
+          echo ""
+          echo "Phase 1 Configuration: Non-blocking mode"
+          echo "All security issues are reported but do not block the pipeline."
+          echo ""
+          echo "Next Steps:"
+          echo "1. Review security findings in the Actions tab"
+          echo "2. Address any high-priority vulnerabilities"
+          echo "3. Consider enabling blocking mode after team adoption"
+          echo "================================="
